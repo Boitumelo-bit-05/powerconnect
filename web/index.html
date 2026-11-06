@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PowerConnect</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--text:#1b2430;--muted:#667085;--line:#e4e7ec;--brand:#f59e0b;--ink:#1b2430;--nav:#111827;--blue:#2563eb;--green:#16a34a;--orange:#ea580c;--red:#dc2626}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--card:#18202b;--text:#e8edf3;--muted:#98a2b3;--line:#2a3441;--nav:#0a0e14}}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}
+header{background:var(--nav);color:#fff;position:sticky;top:0;z-index:5}
+.bar{max-width:1100px;margin:auto;display:flex;align-items:center;gap:16px;padding:10px 16px;flex-wrap:wrap}
+.logo{font-weight:800;font-size:20px}.logo span{color:var(--brand)}
+nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+nav button{background:none;border:0;color:#cbd5e1;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px}
+nav button.active,nav button:hover{background:#243044;color:#fff}
+.who{display:flex;align-items:center;gap:8px;font-size:13px;color:#cbd5e1}
+.hbtn{background:none;border:1px solid #3b4a60;color:#e2e8f0;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:13px}
+.role{background:var(--brand);color:var(--ink);border-radius:999px;padding:1px 9px;font-size:11px;font-weight:700;text-transform:uppercase}
+main{max-width:1100px;margin:20px auto;padding:0 16px 60px}
+.view{display:none}.view.active{display:block}
+h2{margin:0 0 12px}h3{margin:18px 0 6px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}
+.muted{color:var(--muted)}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);font:inherit}
+textarea{min-height:90px;resize:vertical}
+button.primary{background:var(--brand);color:var(--ink);border:0;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:14px}
+button.primary:disabled{opacity:.6;cursor:wait}
+button.ghost{background:none;border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
+button.ghost:disabled{opacity:.5}
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.g4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.stat b{display:block;font-size:30px}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;color:#fff}
+.Reported{background:#64748b}.Assigned{background:var(--blue)}.InProgress{background:var(--orange)}.Resolved{background:var(--green)}.Alert{background:var(--red)}
+.tools{display:flex;gap:10px;margin-bottom:12px}.tools select{width:160px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+tr.click{cursor:pointer}tr.click:hover{background:var(--bg)}
+.scroll{overflow-x:auto}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0}.row .l{width:140px;font-size:14px}
+.track{flex:1;background:var(--line);border-radius:6px;height:16px}.fill{background:var(--blue);height:100%;border-radius:6px}
+.tiles{display:flex;flex-wrap:wrap;gap:12px}
+.tile{width:210px;border-radius:12px;padding:16px;color:#fff;cursor:pointer}
+.tile b{display:block;font-size:30px}.tile small{display:block;margin-top:6px;opacity:.9}
+.hot{background:var(--red)}.warm{background:var(--orange)}.cool{background:var(--green)}
+.chat{height:380px;overflow:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.msg{max-width:82%;padding:10px 14px;border-radius:14px;white-space:pre-wrap}
+.me{align-self:flex-end;background:var(--brand);color:var(--ink)}
+.bot{align-self:flex-start;background:var(--bg);border:1px solid var(--line)}
+.inline{display:flex;gap:8px}.inline button{margin-top:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.thread p{margin:8px 0;padding:8px 10px;background:var(--bg);border-radius:8px}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:9}#overlay.open{display:block}
+#drawer{position:fixed;top:0;right:0;height:100%;width:min(540px,100%);background:var(--card);z-index:10;transform:translateX(100%);transition:transform .2s;overflow:auto;padding:18px;border-left:1px solid var(--line)}
+#drawer.open{transform:none}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+#toast.show{opacity:1}#toast.bad{background:var(--red)}
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--nav)}
+.authbox{width:min(420px,100%)}.authbox .logo{font-size:26px;color:var(--text)}
+.tabs{display:flex;gap:6px;margin:14px 0 4px}.tabs button{flex:1;padding:9px;border:1px solid var(--line);background:none;color:var(--text);border-radius:8px;cursor:pointer}
+.tabs button.active{background:var(--brand);color:var(--ink);border-color:var(--brand);font-weight:700}
+.langsel{width:auto;padding:6px 8px;font-size:13px}
+.who .langsel{background:var(--teal);color:#fff;border-color:#2E6670}
+.bell{position:relative}
+.count{position:absolute;top:-7px;right:-7px;background:var(--red);color:#fff;border-radius:999px;font:700 11px Arial,sans-serif;padding:1px 6px}
+.timeline{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.timeline li{margin:0 0 12px;position:relative;padding-left:12px}
+.timeline li::before{content:"";position:absolute;left:-21px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--gold)}
+.timeline small{display:block;color:var(--muted)}
+.chips2{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 0}
+.chips2 button{border:1px solid var(--teal);background:none;color:var(--teal);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:13px}
+.chips2 button.on{background:var(--teal);color:#fff}
+img.photo{max-width:100%;border-radius:8px;margin:8px 0;border:1px solid var(--line)}
+.note{padding:10px 12px;border-radius:8px;border:1px solid var(--line);margin:8px 0;cursor:pointer}
+.note.unread{border-left:4px solid var(--gold);background:var(--bg)}
+.note small{display:block;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<body>
+
+<div id="auth" hidden>
+  <div class="card authbox">
+    <div class="logo">Power<span>Connect</span></div>
+    <p class="muted" data-i18n="auth.tag">Report and track community service faults.</p>
+    <select class="langsel" onchange="setLang(this.value)" aria-label="Language">
+      <option value="en">English</option><option value="ny">Nyanja</option><option value="bem">Bemba</option>
+    </select>
+    <div class="tabs">
+      <button id="at-login" class="active" data-i18n="auth.login" onclick="authTab('login')">Log in</button>
+      <button id="at-register" data-i18n="auth.register" onclick="authTab('register')">Create account</button>
+    </div>
+    <form id="login-form" onsubmit="doLogin(event)">
+      <label data-i18n="auth.username">Username</label><input id="l-user" required autocomplete="username">
+      <label data-i18n="auth.password">Password</label><input id="l-pass" type="password" required autocomplete="current-password">
+      <button class="primary" data-i18n="auth.login">Log in</button>
+    </form>
+    <form id="register-form" onsubmit="doRegister(event)" hidden>
+      <label data-i18n="auth.name">Your name</label><input id="g-name" required maxlength="60">
+      <label data-i18n="auth.username">Username</label><input id="g-user" required maxlength="30" autocomplete="username">
+      <label data-i18n="auth.pass8">Password (8 or more characters)</label><input id="g-pass" type="password" required minlength="8" autocomplete="new-password">
+      <button class="primary" data-i18n="auth.register">Create account</button>
+    </form>
+  </div>
+</div>
+
+<div id="app" hidden>
+<header><div class="bar">
+  <div class="logo">Power<span>Connect</span></div>
+  <nav id="nav"></nav>
+  <div class="who">
+    <select class="langsel" onchange="setLang(this.value)" aria-label="Language">
+      <option value="en">English</option><option value="ny">Nyanja</option><option value="bem">Bemba</option>
+    </select>
+    <button class="hbtn bell" onclick="openBell()" title="Notifications">&#128276;<span class="count" id="bell-n" hidden>0</span></button>
+    <span id="who"></span><span class="role" id="role"></span>
+    <button class="hbtn" data-i18n="nav.account" onclick="show('account')">Account</button>
+    <button class="hbtn" data-i18n="nav.logout" onclick="logout()">Log out</button>
+  </div>
+</div></header>
+
+<main>
+<section id="v-report" class="view">
+  <div class="card">
+    <h2 data-i18n="form.title">Report a fault</h2>
+    <p class="muted" data-i18n="form.intro">Electricity, water or sanitation problem in your area. We check whether someone has already reported it.</p>
+    <form id="form" onsubmit="submitReport(event)">
+      <label data-i18n="form.category">Category</label>
+      <select id="f-category" onchange="buildChips()">
+        <option value="Electricity" data-i18n="cat.Electricity">Electricity</option>
+        <option value="Water" data-i18n="cat.Water">Water</option>
+        <option value="Sanitation" data-i18n="cat.Sanitation">Sanitation</option>
+        <option value="Waste Management" data-i18n="cat.Waste Management">Waste Management</option>
+      </select>
+      <label data-i18n="form.problem">Common problems</label>
+      <div id="f-chips" class="chips2"></div>
+      <label data-i18n="form.suburb">Suburb</label><input id="f-location" required maxlength="80" placeholder="e.g. Chelstone">
+      <label data-i18n="form.desc">What is the problem?</label><textarea id="f-desc" required maxlength="1000"></textarea>
+      <label data-i18n="form.photo">Add a photo (optional)</label>
+      <input id="f-photo" type="file" accept="image/*" onchange="pickPhoto(this)">
+      <img id="f-prev" class="photo" alt="" hidden>
+      <button class="primary" id="f-btn" data-i18n="form.submit">Submit report</button>
+    </form>
+  </div>
+  <div id="dup" class="card" hidden></div>
+  <div id="done" class="card" hidden></div>
+</section>
+
+<section id="v-reports" class="view">
+  <div class="card">
+    <h2 id="r-title">Reports</h2>
+    <div class="tools">
+      <input id="r-search" placeholder="Search by reference, suburb or description" oninput="renderReports()">
+      <select id="r-filter" onchange="renderReports()"><option value="all">All</option><option value="open">Open</option><option value="resolved">Resolved</option></select>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>Ref</th><th>Category</th><th>Suburb</th><th>Description</th><th>Status</th><th></th></tr></thead>
+      <tbody id="r-body"></tbody>
+    </table></div>
+  </div>
+</section>
+
+<section id="v-dashboard" class="view">
+  <div class="grid g4" id="d-cards"></div>
+  <div class="grid g2">
+    <div class="card"><h2>Cluster alerts</h2><div id="d-alerts"></div></div>
+    <div class="card"><h2>Auto-escalation</h2><div id="d-esc"></div></div>
+    <div class="card"><h2>By status</h2><div id="d-status"></div></div>
+    <div class="card"><h2>By category</h2><div id="d-category"></div></div>
+    <div class="card"><h2>Last 7 days</h2><div id="d-day"></div></div>
+    <div class="card"><h2>By suburb</h2><div id="d-area"></div></div>
+  </div>
+</section>
+
+<section id="v-map" class="view">
+  <div class="card">
+    <h2>Open reports by suburb</h2>
+    <p class="muted">Red means a hotspot (3 or more open reports). Click a suburb to see its reports.</p>
+    <div class="tiles" id="m-tiles"></div>
+  </div>
+</section>
+
+<section id="v-directory" class="view">
+  <div class="grid g2">
+    <div class="card"><h2>Councillors</h2><div id="dir-off"></div>
+      <div class="admin-only" hidden>
+        <h3>Add a councillor</h3>
+        <form onsubmit="addOfficial(event)">
+          <label>Name</label><input id="o-name" required maxlength="80">
+          <label>Title</label><input id="o-title" placeholder="Councillor" maxlength="40">
+          <label>Suburb / ward</label><input id="o-suburb" required maxlength="80">
+          <label>Phone</label><input id="o-phone" maxlength="40">
+          <label>Hotline</label><input id="o-hotline" maxlength="60">
+          <label>Login username (optional)</label><input id="o-user" maxlength="30" autocomplete="off">
+          <label>Login password (optional, 8+ characters)</label><input id="o-pass" type="password" autocomplete="new-password">
+          <button class="primary">Add councillor</button>
+        </form>
+      </div>
+    </div>
+    <div class="card" id="wrk-card"><h2>Field workers</h2><div id="dir-wrk"></div>
+      <div class="admin-only" hidden>
+        <h3>Add a field worker</h3>
+        <form onsubmit="addWorker(event)">
+          <label>Name</label><input id="w-name" required maxlength="80">
+          <label>Specialty</label><input id="w-spec" placeholder="Electricity, Water, Sanitation" maxlength="40">
+          <label>Phone</label><input id="w-phone" required maxlength="40">
+          <label>Login username (optional)</label><input id="w-user" maxlength="30" autocomplete="off">
+          <label>Login password (optional, 8+ characters)</label><input id="w-pass" type="password" autocomplete="new-password">
+          <button class="primary">Add worker</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="card"><h2>Utility hotlines</h2><div id="dir-util"></div></div>
+  <div class="card admin-only" hidden><h2>Demo data</h2>
+    <p class="muted">Creates the demo logins and two sanitation reports in Chelstone for the presentation.</p>
+    <button class="ghost" onclick="loadDemo()">Load demo data</button>
+    <p id="demo-out"></p>
+  </div>
+  <div class="card admin-only" hidden><h2>Accounts</h2><div class="scroll"><table>
+    <thead><tr><th>Username</th><th>Name</th><th>Role</th><th></th></tr></thead><tbody id="dir-acc"></tbody></table></div></div>
+</section>
+
+<section id="v-assistant" class="view">
+  <div class="card">
+    <h2>Assistant</h2>
+    <div id="chat" class="chat"></div>
+    <div class="chips">
+      <button class="ghost" onclick="chip('How do I report a fault?')">How do I report a fault?</button>
+      <button class="ghost" onclick="chip('Who do I call about a power cut?')">Who do I call about a power cut?</button>
+      <button class="ghost" onclick="chip('What is the status of PC-1?')">Status of PC-1</button>
+    </div>
+    <form class="inline" onsubmit="ask(event)">
+      <input id="c-input" placeholder="Ask about a report, your councillor or a hotline" autocomplete="off" maxlength="500">
+      <button class="primary">Send</button>
+    </form>
+  </div>
+</section>
+
+<section id="v-account" class="view">
+  <div class="card" style="max-width:460px">
+    <h2>Your account</h2>
+    <p id="acc-info" class="muted"></p>
+    <h3>Change password</h3>
+    <form onsubmit="changePassword(event)">
+      <label>Current password</label><input id="p-old" type="password" required autocomplete="current-password">
+      <label>New password (8 or more characters)</label><input id="p-new" type="password" required minlength="8" autocomplete="new-password">
+      <button class="primary">Change password</button>
+    </form>
+  </div>
+</section>
+</main>
+</div>
+
+<div id="overlay" onclick="closeDrawer()"></div>
+<aside id="drawer"><button class="ghost" onclick="closeDrawer()">&#10005;</button><div id="drawer-body"></div></aside>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const title = s => String(s == null ? '' : s).replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+const cls = s => String(s).replace(/\s/g, '');
+const session = Math.random().toString(36).slice(2);
+const views = ['report', 'reports', 'dashboard', 'map', 'directory', 'assistant', 'account'];
+const NAV = {
+  resident: [['report', 'nav.report'], ['reports', 'nav.myreports'], ['directory', 'nav.contacts'], ['assistant', 'nav.assistant']],
+  councillor: [['reports', 'nav.reports'], ['dashboard', 'nav.dashboard'], ['map', 'nav.map'], ['directory', 'nav.directory'], ['assistant', 'nav.assistant']],
+  worker: [['reports', 'nav.jobs'], ['directory', 'nav.contacts'], ['assistant', 'nav.assistant']],
+  admin: [['reports', 'nav.allreports'], ['dashboard', 'nav.dashboard'], ['map', 'nav.map'], ['directory', 'nav.directory'], ['assistant', 'nav.assistant']]
+};
+const PROBLEMS = {
+  'Electricity': ['Power outage', 'Fallen power line', 'Low voltage', 'Stolen cables', 'Transformer sparks'],
+  'Water': ['Burst main', 'No water supply', 'Supply cut', 'Low pressure'],
+  'Sanitation': ['Sewage overflow', 'Blocked drain', 'Sanitation service request'],
+  'Waste Management': ['Uncollected rubbish', 'Illegal dumping']
+};
+
+/* ---------- Languages ----------
+   Nyanja (ny) and Bemba (bem) are FIRST DRAFTS. Have a native speaker check them.
+   Any key that is missing falls back to English. */
+const I18N = {
+  en: {
+    'auth.tag': 'Report and track community service faults.', 'auth.login': 'Log in', 'auth.register': 'Create account',
+    'auth.username': 'Username', 'auth.password': 'Password', 'auth.name': 'Your name', 'auth.pass8': 'Password (8 or more characters)',
+    'nav.report': 'Report a fault', 'nav.myreports': 'My reports', 'nav.reports': 'Reports', 'nav.jobs': 'My jobs',
+    'nav.allreports': 'All reports', 'nav.contacts': 'Contacts', 'nav.directory': 'Directory', 'nav.dashboard': 'Dashboard',
+    'nav.map': 'Suburb map', 'nav.assistant': 'Assistant', 'nav.account': 'Account', 'nav.logout': 'Log out',
+    'form.title': 'Report a fault', 'form.intro': 'Electricity, water or sanitation problem in your area. We check whether someone has already reported it.',
+    'form.category': 'Category', 'form.problem': 'Common problems', 'form.suburb': 'Suburb', 'form.desc': 'What is the problem?',
+    'form.photo': 'Add a photo (optional)', 'form.submit': 'Submit report', 'form.checking': 'Checking for duplicates...',
+    'cat.Electricity': 'Electricity', 'cat.Water': 'Water', 'cat.Sanitation': 'Sanitation', 'cat.Waste Management': 'Waste Management',
+    'st.Reported': 'Reported', 'st.Assigned': 'Assigned', 'st.InProgress': 'In Progress', 'st.Resolved': 'Resolved',
+    'btn.send': 'Send message', 'btn.assign': 'Assign', 'btn.departed': 'Departed', 'btn.arrived': 'Arrived',
+    'btn.fixedyes': 'Yes, it is fixed', 'btn.fixedno': 'No, still broken', 'btn.rate': 'Submit rating',
+    'sec.timeline': 'Timeline', 'sec.messages': 'Messages', 'sec.contacts': 'Who to contact', 'sec.rating': 'Rating',
+    'sec.notes': 'Notifications', 'sec.status': 'Update status', 'sec.assign': 'Assign a worker', 'sec.fixed': 'Is the problem really fixed?',
+    'dup.title': 'This may already be reported', 'dup.yes': 'Yes, same problem', 'dup.no': 'No, it is different',
+    'note.none': 'No notifications yet.', 'note.new': 'You have a new notification'
+  },
+  ny: {
+    'auth.tag': 'Nenani vuto ndipo muone momwe likuyendera.', 'auth.login': 'Lowani', 'auth.register': 'Tsegulani akaunti',
+    'auth.username': 'Dzina lolowera', 'auth.password': 'Chinsinsi', 'auth.name': 'Dzina lanu', 'auth.pass8': 'Chinsinsi (zilembo 8 kapena kuposa)',
+    'nav.report': 'Nenani vuto', 'nav.myreports': 'Malipoti anga', 'nav.reports': 'Malipoti', 'nav.jobs': 'Ntchito zanga',
+    'nav.allreports': 'Malipoti onse', 'nav.contacts': 'Manambala a foni', 'nav.map': 'Mapu ya madera',
+    'nav.assistant': 'Wothandiza', 'nav.account': 'Akaunti', 'nav.logout': 'Tulukani',
+    'form.title': 'Nenani vuto', 'form.intro': 'Vuto la magetsi, madzi kapena ukhondo m\'dera lanu. Tiona ngati wina wanena kale.',
+    'form.category': 'Mtundu wa vuto', 'form.problem': 'Mavuto odziwika', 'form.suburb': 'Dera', 'form.desc': 'Vuto ndi lotani?',
+    'form.photo': 'Onjezani chithunzi (sikofunika)', 'form.submit': 'Tumizani lipoti', 'form.checking': 'Tikuyang\'ana ngati lanenedwa kale...',
+    'cat.Electricity': 'Magetsi', 'cat.Water': 'Madzi', 'cat.Sanitation': 'Ukhondo', 'cat.Waste Management': 'Zinyalala',
+    'st.Reported': 'Lanenedwa', 'st.Assigned': 'Lapatsidwa', 'st.InProgress': 'Likugwiridwa', 'st.Resolved': 'Lathetsedwa',
+    'btn.send': 'Tumizani uthenga', 'btn.assign': 'Perekani', 'btn.departed': 'Wanyamuka', 'btn.arrived': 'Wafika',
+    'btn.fixedyes': 'Inde, vuto lathetsedwa', 'btn.fixedno': 'Ayi, vuto likadalipo', 'btn.rate': 'Tumizani chiwerengero',
+    'sec.timeline': 'Zomwe zachitika', 'sec.messages': 'Mauthenga', 'sec.contacts': 'Oyenera kuyimbira', 'sec.rating': 'Chiwerengero',
+    'sec.notes': 'Zidziwitso', 'sec.status': 'Sinthani momwe zilili', 'sec.assign': 'Pereka wogwira ntchito', 'sec.fixed': 'Kodi vuto lathetsedwadi?',
+    'dup.title': 'Izi zitha kukhala zanenedwa kale', 'dup.yes': 'Inde, ndi vuto lomwelo', 'dup.no': 'Ayi, ndi losiyana',
+    'note.none': 'Palibe zidziwitso.', 'note.new': 'Muli ndi chidziwitso chatsopano'
+  },
+  bem: {
+    'auth.login': 'Ingileni', 'auth.name': 'Ishina lyenu',
+    'nav.report': 'Ishibisheni ubwafya', 'nav.myreports': 'Amalipoti yandi', 'nav.reports': 'Amalipoti',
+    'nav.allreports': 'Amalipoti yonse', 'nav.assistant': 'Umwafwishi', 'nav.logout': 'Fumamo',
+    'form.title': 'Ishibisheni ubwafya', 'form.suburb': 'Ncende', 'form.submit': 'Tumeni ilipoti',
+    'cat.Water': 'Amenshi',
+    'dup.yes': 'Ee, ni bwafya bumo', 'dup.no': 'Awe, bwapusana'
+  }
+};
+let lang = localStorage.getItem('pc_lang') || 'en';
+if (!I18N[lang]) lang = 'en';
+const T = k => (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
+const tc = c => { const k = 'cat.' + title(c); return (I18N[lang] && I18N[lang][k]) || I18N.en[k] || title(c); };
+const ts = s => (I18N[lang] && I18N[lang]['st.' + cls(s)]) || s;
+
+function setLang(v) {
+  lang = I18N[v] ? v : 'en';
+  localStorage.setItem('pc_lang', lang);
+  applyLang();
+}
+
+function applyLang() {
+  document.querySelectorAll('.langsel').forEach(s => { s.value = lang; });
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = T(el.dataset.i18n); });
+  document.documentElement.lang = lang;
+  if (me) {
+    buildNav();
+    $('#r-title').textContent = rTitle();
+    show(current);
+  }
+}
+
+let me = null, toastTimer, pending = null, allReports = [], current = 'report', photoData = '', problem = '', lastUnread = null;
+
+async function api(path, method = 'GET', data) {
+  const opt = { method, headers: { 'X-Requested-With': 'PowerConnect' } };
+  if (data) opt.body = new URLSearchParams(data);
+  const res = await fetch('/api' + path, opt);
+  const body = await res.json().catch(() => ({}));
+  if (res.status === 401 && path !== '/login' && path !== '/session') {
+    showAuth('Please log in again.');
+    throw new Error('Please log in.');
+  }
+  if (!res.ok) throw new Error(body.error || 'Something went wrong');
+  return body;
+}
+
+function toast(msg, bad) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.className = 'show' + (bad ? ' bad' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3500);
+}
+
+/* ---------- Login and registration ---------- */
+function authTab(v) {
+  $('#login-form').hidden = v !== 'login';
+  $('#register-form').hidden = v !== 'register';
+  $('#at-login').classList.toggle('active', v === 'login');
+  $('#at-register').classList.toggle('active', v === 'register');
+}
+
+function showAuth(msg) {
+  me = null;
+  closeDrawer();
+  $('#app').hidden = true;
+  $('#auth').hidden = false;
+  if (msg) toast(msg, true);
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  try {
+    const r = await api('/login', 'POST', { username: $('#l-user').value, password: $('#l-pass').value });
+    $('#l-pass').value = '';
+    enter(r.user);
+  } catch (err) { toast(err.message, true); }
+}
+
+async function doRegister(e) {
+  e.preventDefault();
+  try {
+    const r = await api('/register', 'POST', { name: $('#g-name').value, username: $('#g-user').value, password: $('#g-pass').value });
+    $('#g-pass').value = '';
+    enter(r.user);
+  } catch (err) { toast(err.message, true); }
+}
+
+async function logout() {
+  try { await api('/logout', 'POST', {}); } catch (err) { /* ignore */ }
+  showAuth();
+}
+
+function rTitle() {
+  if (me.role === 'resident') return T('nav.myreports');
+  if (me.role === 'worker') return T('nav.jobs');
+  if (me.role === 'admin') return T('nav.allreports');
+  return T('nav.reports') + (me.suburb ? ' - ' + me.suburb : '');
+}
+
+function buildNav() {
+  $('#nav').innerHTML = NAV[me.role].map(([id, key]) => `<button id="t-${id}" onclick="show('${id}')">${esc(T(key))}</button>`).join('');
+}
+
+function enter(user) {
+  me = user;
+  $('#auth').hidden = true;
+  $('#app').hidden = false;
+  $('#who').textContent = me.name;
+  $('#role').textContent = me.role;
+  buildNav();
+  $('#r-title').textContent = rTitle();
+  $('#acc-info').textContent = `Signed in as ${me.username} (${me.role}).`;
+  document.querySelectorAll('.admin-only').forEach(el => { el.hidden = me.role !== 'admin'; });
+  $('#wrk-card').hidden = !['admin', 'councillor'].includes(me.role);
+  $('#chat').innerHTML = '';
+  addMsg('Hi ' + me.name + '! Ask me about a report, your councillor, or a hotline.', 'bot');
+  $('#dup').hidden = true; $('#done').hidden = true;
+  buildChips();
+  lastUnread = null;
+  poll();
+  show(NAV[me.role][0][0]);
+}
+
+function show(v) {
+  current = v;
+  views.forEach(n => {
+    $('#v-' + n).classList.toggle('active', n === v);
+    const b = $('#t-' + n);
+    if (b) b.classList.toggle('active', n === v);
+  });
+  if (v === 'reports') loadReports();
+  if (v === 'dashboard') loadDashboard();
+  if (v === 'map') loadMap();
+  if (v === 'directory') loadDirectory();
+}
+
+async function changePassword(e) {
+  e.preventDefault();
+  try {
+    await api('/password', 'POST', { current: $('#p-old').value, password: $('#p-new').value });
+    e.target.reset(); toast('Password changed');
+  } catch (err) { toast(err.message, true); }
+}
+
+/* ---------- Notifications ---------- */
+function setBell(n) {
+  const el = $('#bell-n');
+  el.textContent = n;
+  el.hidden = !n;
+}
+
+async function poll() {
+  if (!me) return;
+  try {
+    const n = await api('/notifications');
+    setBell(n.unread);
+    if (lastUnread !== null && n.unread > lastUnread) { toast(T('note.new')); refreshView(); }
+    lastUnread = n.unread;
+  } catch (err) { /* ignore */ }
+}
+setInterval(poll, 8000);
+
+function refreshView() { if (['reports', 'dashboard', 'map'].includes(current)) show(current); }
+
+function openDrawer() { $('#drawer').classList.add('open'); $('#overlay').classList.add('open'); }
+function closeDrawer() { $('#drawer').classList.remove('open'); $('#overlay').classList.remove('open'); }
+
+async function openBell() {
+  try {
+    const n = await api('/notifications');
+    $('#drawer-body').innerHTML = `<h2>${esc(T('sec.notes'))}</h2>` + (n.items.length
+      ? n.items.map(i => `<div class="note ${i.is_read ? '' : 'unread'}" onclick="openReport(${Number(i.report_id)})">${esc(i.message)}<small>${esc(i.created_at)}</small></div>`).join('')
+      : `<p class="muted">${esc(T('note.none'))}</p>`);
+    openDrawer();
+    if (n.unread) { await api('/notifications', 'POST', {}); setBell(0); lastUnread = 0; }
+  } catch (err) { toast(err.message, true); }
+}
+
+/* ---------- Report a fault (residents) ---------- */
+function buildChips() {
+  problem = '';
+  $('#f-chips').innerHTML = (PROBLEMS[$('#f-category').value] || []).map(p => `<button type="button" onclick="pickProblem(this)">${esc(p)}</button>`).join('');
+}
+
+function pickProblem(btn) {
+  const wasOn = btn.classList.contains('on');
+  document.querySelectorAll('#f-chips button').forEach(b => b.classList.remove('on'));
+  problem = wasOn ? '' : btn.textContent;
+  if (!wasOn) btn.classList.add('on');
+}
+
+function pickPhoto(input) {
+  const file = input.files[0];
+  photoData = '';
+  $('#f-prev').hidden = true;
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onerror = () => toast('Could not read that file.', true);
+  reader.onload = () => {
+    const img = new Image();
+    img.onerror = () => toast('That file is not an image.', true);
+    img.onload = () => {
+      const scale = Math.min(1, 1024 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      photoData = c.toDataURL('image/jpeg', 0.8);
+      $('#f-prev').src = photoData; $('#f-prev').hidden = false;
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetForm() {
+  $('#form').reset();
+  photoData = '';
+  $('#f-prev').hidden = true;
+  buildChips();
+}
+
+async function submitReport(e) {
+  e.preventDefault();
+  const base = { category: $('#f-category').value, location: $('#f-location').value, description: $('#f-desc').value };
+  const full = Object.assign({ problem, photo: photoData }, base);
+  const btn = $('#f-btn');
+  btn.disabled = true; btn.textContent = T('form.checking');
+  $('#dup').hidden = true; $('#done').hidden = true;
+  try {
+    const r = await api('/check', 'POST', base);
+    if (r.duplicate) { pending = { data: full, match: r }; showDuplicate(); }
+    else await createReport(full);
+  } catch (err) { toast(err.message, true); }
+  btn.disabled = false; btn.textContent = T('form.submit');
+}
+
+function showDuplicate() {
+  const m = pending.match;
+  $('#dup').hidden = false;
+  $('#dup').innerHTML = `<h2>${esc(T('dup.title'))}</h2>
+    <p><b>PC-${m.id}</b> - ${esc(m.location)}: ${esc(m.description)}</p>
+    <p class="muted">Why: ${esc(m.reason)}</p>
+    <button class="primary" onclick="confirmDuplicate()">${esc(T('dup.yes'))}</button>
+    <button class="ghost" onclick="forceCreate()">${esc(T('dup.no'))}</button>`;
+}
+
+async function confirmDuplicate() {
+  const { data, match } = pending;
+  try {
+    const r = await api('/link', 'POST', { id: match.id, description: data.description });
+    $('#dup').hidden = true;
+    done(`<h2>Thank you!</h2><p>Your report was linked to <b>PC-${match.id}</b>, so no duplicate was created.
+      ${r.confirmations} other person(s) have confirmed this problem. You will get every update on it.</p>
+      <button class="ghost" onclick="openReport(${match.id})">PC-${match.id}</button>`);
+    resetForm();
+  } catch (err) { toast(err.message, true); }
+}
+
+async function forceCreate() {
+  $('#dup').hidden = true;
+  try { await createReport(pending.data); } catch (err) { toast(err.message, true); }
+}
+
+async function createReport(data) {
+  const r = await api('/reports', 'POST', data);
+  done(`<h2>Report submitted</h2><p>Your reference is <b>PC-${r.id}</b>.</p>${contactsHtml(r.councillors, r.utilities)}
+    <button class="ghost" onclick="openReport(${r.id})">PC-${r.id}</button>`);
+  resetForm();
+}
+
+function done(html) { $('#done').hidden = false; $('#done').innerHTML = html; }
+
+function contactsHtml(councillors, utilities) {
+  let h = `<h3>${esc(T('sec.contacts'))}</h3>`;
+  h += councillors && councillors.length
+    ? councillors.map(o => `<p><b>${esc(o.name)}</b> (${esc(o.title)}) - hotline ${esc(o.hotline || '-')}, phone ${esc(o.phone || '-')}</p>`).join('')
+    : '<p class="muted">No councillor is registered for this suburb yet.</p>';
+  h += (utilities || []).map(u => {
+    const bits = [u.hotline && 'hotline ' + u.hotline, u.sms, u.whatsapp && 'WhatsApp ' + u.whatsapp, u.email].filter(Boolean);
+    return `<p><b>${esc(u.name)}</b> - ${bits.map(esc).join(' / ')}</p>`;
+  }).join('');
+  return h;
+}
+
+/* ---------- Reports list and detail ---------- */
+async function loadReports() {
+  try { allReports = await api('/reports'); renderReports(); }
+  catch (err) { toast(err.message, true); }
+}
+
+function renderReports() {
+  const q = $('#r-search').value.toLowerCase(), f = $('#r-filter').value;
+  const rows = allReports.filter(r => {
+    const okFilter = f === 'all' || (f === 'open' ? r.status !== 'Resolved' : r.status === 'Resolved');
+    const text = `pc-${r.id} ${r.category} ${r.problem || ''} ${r.location} ${r.description}`.toLowerCase();
+    return okFilter && text.includes(q);
+  });
+  $('#r-body').innerHTML = rows.length ? rows.map(r => `<tr class="click" onclick="openReport(${r.id})">
+      <td>PC-${r.id}</td><td>${esc(tc(r.category))}${r.problem ? '<br><span class="muted">' + esc(r.problem) + '</span>' : ''}</td>
+      <td>${esc(r.location)}</td><td>${esc(r.description)}</td>
+      <td><span class="badge ${cls(r.status)}">${esc(ts(r.status))}</span></td>
+      <td>${r.confirmations ? '+' + r.confirmations : ''}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="muted">No reports found.</td></tr>';
+}
+
+async function openReport(id) {
+  try {
+    const d = await api('/reports/' + id);
+    const dir = ['admin', 'councillor'].includes(me.role) ? await api('/directory') : { workers: [] };
+    renderDrawer(d, dir.workers);
+  } catch (err) { toast(err.message, true); }
+}
+
+function renderDrawer(d, workers) {
+  const r = d.report[0], fb = d.feedback[0];
+  const canAssign = ['admin', 'councillor'].includes(me.role);
+  const isWorker = me.role === 'worker';
+  const statuses = isWorker ? ['In Progress', 'Resolved'] : ['Assigned', 'In Progress', 'Resolved'];
+  let h = `<h2>PC-${r.id} <span class="badge ${cls(r.status)}">${esc(ts(r.status))}</span></h2>
+    <p><b>${esc(tc(r.category))}</b>${r.problem ? ' - ' + esc(r.problem) : ''} - ${esc(r.location)}</p>
+    <p>${esc(r.description)}</p>`;
+  if (r.photo) h += `<img class="photo" src="/photos/${encodeURIComponent(r.photo)}" alt="">`;
+  h += `<p class="muted">${esc(r.created_at)}${r.confirmations ? ' - confirmed by ' + r.confirmations + ' other(s)' : ''}</p>
+    <p>Field worker: ${r.worker ? esc(r.worker) + ' (' + esc(r.worker_phone) + ')' : '<span class="muted">not assigned yet</span>'}</p>`;
+
+  if (isWorker) {
+    h += `<h3>${esc(T('sec.status'))}</h3><div>
+      <button class="ghost" onclick="stage(${r.id}, 'departed')">${esc(T('btn.departed'))}</button>
+      <button class="ghost" onclick="stage(${r.id}, 'arrived')">${esc(T('btn.arrived'))}</button>
+      ${statuses.map(s => `<button class="ghost" ${s === r.status ? 'disabled' : ''} onclick="setStatus(${r.id}, '${s}')">${esc(ts(s))}</button>`).join(' ')}</div>`;
+  } else if (canAssign) {
+    h += `<h3>${esc(T('sec.status'))}</h3><div>${statuses.map(s => `<button class="ghost" ${s === r.status ? 'disabled' : ''} onclick="setStatus(${r.id}, '${s}')">${esc(ts(s))}</button>`).join(' ')}</div>
+      <h3>${esc(T('sec.assign'))}</h3>${workers.length
+        ? `<div class="inline"><select id="w-select">${workers.map(w => `<option value="${w.id}">${esc(w.name)} (${esc(w.specialty || 'General')})</option>`).join('')}</select><button class="ghost" onclick="assign(${r.id})">${esc(T('btn.assign'))}</button></div>`
+        : '<p class="muted">Add field workers in the Directory first.</p>'}`;
+  }
+
+  h += contactsHtml(d.councillors, d.utilities);
+  h += `<h3>${esc(T('sec.timeline'))}</h3>`;
+  h += d.events.length
+    ? `<ul class="timeline">${d.events.map(e => `<li>${esc(e.event)}<small>${esc(e.actor)} - ${esc(e.created_at)}</small></li>`).join('')}</ul>`
+    : '<p class="muted">No steps recorded yet.</p>';
+  h += `<h3>${esc(T('sec.messages'))}</h3>
+    <div class="thread">${d.messages.length ? d.messages.map(m => `<p><b>${esc(m.sender)}</b> <span class="muted">${esc(m.sent_at)}</span><br>${esc(m.body)}</p>`).join('') : '<p class="muted">No messages yet.</p>'}</div>
+    <textarea id="m-body" maxlength="500"></textarea>
+    <button class="primary" onclick="sendMessage(${r.id})">${esc(T('btn.send'))}</button>`;
+
+  if (me.role === 'resident' && d.mine) {
+    if (r.status === 'Resolved' && r.confirmed == null) {
+      h += `<h3>${esc(T('sec.fixed'))}</h3>
+        <button class="primary" onclick="confirmFix(${r.id}, 'yes')">${esc(T('btn.fixedyes'))}</button>
+        <button class="ghost" onclick="confirmFix(${r.id}, 'no')">${esc(T('btn.fixedno'))}</button>`;
+    } else if (r.confirmed == 1) {
+      h += `<h3>${esc(T('sec.rating'))}</h3>` + (fb
+        ? `<p>${'&#9733;'.repeat(fb.rating)}${'&#9734;'.repeat(5 - fb.rating)} ${esc(fb.comment || '')}</p>`
+        : `<select id="rate"><option value="5">5 - Excellent</option><option value="4">4 - Good</option><option value="3">3 - Okay</option><option value="2">2 - Poor</option><option value="1">1 - Very poor</option></select>
+          <input id="rate-c" placeholder="Comment (optional)" maxlength="300"><button class="primary" onclick="rate(${r.id})">${esc(T('btn.rate'))}</button>`);
+    }
+  }
+  $('#drawer-body').innerHTML = h;
+  openDrawer();
+}
+
+function refresh(id) {
+  openReport(id);
+  if (current === 'reports') loadReports();
+  poll();
+}
+
+async function setStatus(id, status) {
+  try { await api(`/reports/${id}/status`, 'POST', { status }); toast('Status updated'); refresh(id); }
+  catch (err) { toast(err.message, true); }
+}
+async function stage(id, stageName) {
+  try { await api(`/reports/${id}/stage`, 'POST', { stage: stageName }); toast('Logged'); refresh(id); }
+  catch (err) { toast(err.message, true); }
+}
+async function assign(id) {
+  try { await api(`/reports/${id}/assign`, 'POST', { worker_id: $('#w-select').value }); toast('Worker assigned'); refresh(id); }
+  catch (err) { toast(err.message, true); }
+}
+async function sendMessage(id) {
+  try { await api(`/reports/${id}/messages`, 'POST', { body: $('#m-body').value }); toast('Message sent'); refresh(id); }
+  catch (err) { toast(err.message, true); }
+}
+async function confirmFix(id, answer) {
+  try { await api(`/reports/${id}/confirm`, 'POST', { answer }); toast(answer === 'yes' ? 'Thank you' : 'Report reopened'); refresh(id); }
+  catch (err) { toast(err.message, true); }
+}
+async function rate(id) {
+  try { await api(`/reports/${id}/feedback`, 'POST', { rating: $('#rate').value, comment: $('#rate-c').value }); toast('Thank you for rating'); refresh(id); }
+  catch (err) { toast(err.message, true); }
+}
+
+/* ---------- Dashboard and map ---------- */
+const stat = (value, label) => `<div class="card stat"><b>${esc(value)}</b>${esc(label)}</div>`;
+
+function bars(rows) {
+  const max = Math.max(1, ...rows.map(r => r.n));
+  return rows.map(r => `<div class="row"><div class="l">${esc(title(r.label))}</div>
+    <div class="track"><div class="fill" style="width:${r.n * 100 / max}%"></div></div><b>${r.n}</b></div>`).join('')
+    || '<p class="muted">No data yet.</p>';
+}
+
+async function loadDashboard() {
+  try {
+    const d = await api('/dashboard'), rt = d.rating[0], mins = d.avgMinutes[0].minutes;
+    const fmt = m => m == null ? 'n/a' : (m < 90 ? m + ' min' : (m / 60).toFixed(1) + ' h');
+    $('#d-cards').innerHTML = stat(d.total, 'Total reports') + stat(d.open, 'Open') + stat(d.resolved, 'Resolved')
+      + stat(rt.average == null ? 'n/a' : rt.average + ' / 5', 'Average rating (' + rt.n + ')')
+      + stat(fmt(mins), 'Average time to resolve') + stat(d.duplicates, 'Duplicates prevented');
+    const alerts = d.clusters.filter(c => c.flagged);
+    $('#d-alerts').innerHTML = alerts.length
+      ? alerts.map(c => `<p><span class="badge Alert">ALERT</span> <b>${esc(tc(c.category))}</b> in ${esc(title(c.suburb))}: ${c.n} open reports</p>`).join('')
+      : `<p class="muted">No group has reached ${d.threshold} open reports.</p>`;
+    const hrs = Math.round(d.escalationMinutes / 60);
+    $('#d-esc').innerHTML = d.escalations.length
+      ? d.escalations.map(e => `<p><span class="badge Alert">ESCALATED</span> <a href="#" onclick="openReport(${e.id});return false">PC-${e.id}</a> ${esc(tc(e.category))} in ${esc(e.location)} (${esc(e.status)}), no progress for ${Math.floor(e.idle / 60)}h</p>`).join('')
+      : `<p class="muted">No open report has been idle for ${hrs} hours or more.</p>`;
+    $('#d-status').innerHTML = bars(d.byStatus);
+    $('#d-category').innerHTML = bars(d.byCategory);
+    $('#d-day').innerHTML = bars(d.byDay);
+    $('#d-area').innerHTML = bars(d.byArea);
+  } catch (err) { toast(err.message, true); }
+}
+
+async function loadMap() {
+  try {
+    const d = await api('/dashboard'), by = {};
+    d.clusters.forEach(c => {
+      const key = String(c.suburb).trim().toLowerCase();
+      by[key] = by[key] || { total: 0, cats: [] };
+      by[key].total += c.n;
+      by[key].cats.push(tc(c.category) + ': ' + c.n);
+    });
+    const list = Object.entries(by).sort((a, b) => b[1].total - a[1].total);
+    $('#m-tiles').innerHTML = list.length ? list.map(([s, v]) => {
+      const level = v.total >= d.threshold ? 'hot' : (v.total === d.threshold - 1 ? 'warm' : 'cool');
+      return `<div class="tile ${level}" data-s="${esc(s)}"><b>${v.total}</b>${esc(title(s))}<small>${esc(v.cats.join(', '))}</small>${level === 'hot' ? '<small>HOTSPOT</small>' : ''}</div>`;
+    }).join('') : '<p class="muted">No open reports.</p>';
+    $('#m-tiles').onclick = e => {
+      const tile = e.target.closest('.tile');
+      if (tile) { show('reports'); $('#r-search').value = tile.dataset.s; renderReports(); }
+    };
+  } catch (err) { toast(err.message, true); }
+}
+
+/* ---------- Directory ---------- */
+async function loadDirectory() {
+  try {
+    const d = await api('/directory'), admin = me.role === 'admin';
+    const loginBtn = (role, p) => !admin ? '' : (p.login
+      ? `<br><span class="muted">Login: ${esc(p.login)}</span>`
+      : `<br><button class="ghost" data-role="${role}" data-id="${p.id}" data-name="${esc(p.name)}" onclick="openLoginForm(this)">Create login</button>`);
+    $('#dir-off').innerHTML = d.officials.length ? d.officials.map(o => `<p><b>${esc(o.name)}</b> (${esc(o.title)}) - ${esc(o.suburb)}<br><span class="muted">Hotline ${esc(o.hotline || '-')} / Phone ${esc(o.phone || '-')}</span>${loginBtn('councillor', o)}</p>`).join('') : '<p class="muted">No councillors yet.</p>';
+    $('#dir-wrk').innerHTML = d.workers.length ? d.workers.map(w => `<p><b>${esc(w.name)}</b> (${esc(w.specialty || 'General')})<br><span class="muted">Phone ${esc(w.phone)}</span>${loginBtn('worker', w)}</p>`).join('') : '<p class="muted">No field workers yet.</p>';
+    $('#dir-util').innerHTML = d.utilities.map(u => {
+      const bits = [u.hotline && 'Hotline ' + u.hotline, u.sms && 'SMS/USSD ' + u.sms, u.whatsapp && 'WhatsApp ' + u.whatsapp, u.email && u.email].filter(Boolean);
+      return `<p><b>${esc(u.name)}</b><br><span class="muted">${bits.map(esc).join(' / ')}</span>${u.notes ? '<br>' + esc(u.notes) : ''}</p>`;
+    }).join('') || '<p class="muted">No utility contacts saved.</p>';
+    if (admin) {
+      $('#dir-acc').innerHTML = d.accounts.map(a => `<tr><td>${esc(a.username)}</td><td>${esc(a.name)}</td><td>${esc(a.role)}</td>
+        <td><button class="ghost" data-id="${a.id}" data-name="${esc(a.username)}" onclick="openResetForm(this)">Reset password</button></td></tr>`).join('');
+    }
+  } catch (err) { toast(err.message, true); }
+}
+
+async function loadDemo() {
+  try {
+    const r = await api('/demo', 'POST', {});
+    $('#demo-out').textContent = 'Demo logins are ready. Password for all of them: ' + r.password;
+    loadDirectory();
+  } catch (err) { toast(err.message, true); }
+}
+
+async function addOfficial(e) {
+  e.preventDefault();
+  try {
+    await api('/officials', 'POST', { name: $('#o-name').value, title: $('#o-title').value, suburb: $('#o-suburb').value,
+      phone: $('#o-phone').value, hotline: $('#o-hotline').value, username: $('#o-user').value, password: $('#o-pass').value });
+    e.target.reset(); toast('Councillor added'); loadDirectory();
+  } catch (err) { toast(err.message, true); }
+}
+
+async function addWorker(e) {
+  e.preventDefault();
+  try {
+    await api('/workers', 'POST', { name: $('#w-name').value, specialty: $('#w-spec').value, phone: $('#w-phone').value,
+      username: $('#w-user').value, password: $('#w-pass').value });
+    e.target.reset(); toast('Worker added'); loadDirectory();
+  } catch (err) { toast(err.message, true); }
+}
+
+function openLoginForm(btn) {
+  const { role, id, name } = btn.dataset;
+  $('#drawer-body').innerHTML = `<h2>Create login</h2><p>For <b>${esc(name)}</b> (${esc(role)})</p>
+    <form onsubmit="createLogin(event, '${role}', ${Number(id)})">
+      <label>Username</label><input id="cl-user" required maxlength="30" autocomplete="off">
+      <label>Password (8 or more characters)</label><input id="cl-pass" type="password" required minlength="8" autocomplete="new-password">
+      <button class="primary">Create login</button></form>`;
+  openDrawer();
+}
+
+async function createLogin(e, role, id) {
+  e.preventDefault();
+  try {
+    await api('/accounts', 'POST', { role, ref_id: id, username: $('#cl-user').value, password: $('#cl-pass').value });
+    toast('Login created'); closeDrawer(); loadDirectory();
+  } catch (err) { toast(err.message, true); }
+}
+
+function openResetForm(btn) {
+  const { id, name } = btn.dataset;
+  $('#drawer-body').innerHTML = `<h2>Reset password</h2><p>For <b>${esc(name)}</b>. They will be logged out.</p>
+    <form onsubmit="resetPassword(event, ${Number(id)})">
+      <label>New password (8 or more characters)</label><input id="rp-pass" type="password" required minlength="8" autocomplete="new-password">
+      <button class="primary">Reset password</button></form>`;
+  openDrawer();
+}
+
+async function resetPassword(e, id) {
+  e.preventDefault();
+  try {
+    await api('/accounts/' + id + '/password', 'POST', { password: $('#rp-pass').value });
+    toast('Password reset'); closeDrawer();
+  } catch (err) { toast(err.message, true); }
+}
+
+/* ---------- Assistant ---------- */
+function addMsg(text, who) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + who; d.textContent = text;
+  $('#chat').appendChild(d); $('#chat').scrollTop = $('#chat').scrollHeight;
+  return d;
+}
+
+async function ask(e) {
+  e.preventDefault();
+  const input = $('#c-input'), text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addMsg(text, 'me');
+  const wait = addMsg('Thinking...', 'bot');
+  try {
+    const r = await api('/chat', 'POST', { session, message: text });
+    wait.textContent = r.reply;
+    if (!r.smart) wait.title = 'Basic mode (AI not available)';
+  } catch (err) { wait.textContent = 'Sorry: ' + err.message; }
+  $('#chat').scrollTop = $('#chat').scrollHeight;
+}
+
+function chip(text) { $('#c-input').value = text; $('#c-input').form.requestSubmit(); }
+
+/* ---------- Start ---------- */
+(async function boot() {
+  applyLang();
+  try {
+    const s = await api('/session');
+    if (s.loggedIn) enter(s.user); else showAuth();
+  } catch (err) { showAuth(); }
+})();
+</script>
+</body>
+</html>
